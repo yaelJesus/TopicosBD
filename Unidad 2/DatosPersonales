@@ -1,0 +1,124 @@
+CREATE TYPE Direccion AS OBJECT(
+    calle VARCHAR2(50),
+    cp VARCHAR2(5),
+    ciudad VARCHAR2(50),
+    estado VARCHAR2(20),
+    pais VARCHAR2(50),
+    MEMBER PROCEDURE mostrarDireccion (SELF IN OUT NOCOPY Direccion)
+);
+
+CREATE TYPE BODY Direccion AS
+    MEMBER PROCEDURE mostrarDireccion (SELF IN OUT NOCOPY Direccion) IS
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE(calle || ' ' || cp || ' ' || ciudad || ' ' || estado || ' ' || pais);
+    END;
+END;
+--------------------------------------------------------------------------------------------
+CREATE TYPE Persona AS OBJECT(
+    idPersona NUMBER,
+    nombre VARCHAR2(50),
+    correo VARCHAR2(50),
+    domicilio Direccion,
+    MAP MEMBER FUNCTION getId RETURN NUMBER,
+    MEMBER FUNCTION getName RETURN VARCHAR2,
+    MEMBER FUNCTION getMail RETURN VARCHAR2,
+    MEMBER FUNCTION getAddress RETURN Direccion,
+    MEMBER PROCEDURE mostrarPersona (SELF IN OUT NOCOPY Persona)
+)NOT FINAL;
+
+CREATE TYPE BODY Persona AS
+    MAP MEMBER FUNCTION getId RETURN NUMBER IS
+    BEGIN
+        RETURN idPersona; 
+    END;
+    MEMBER FUNCTION getName RETURN VARCHAR2 IS
+    BEGIN
+        RETURN nombre;
+    END;
+    MEMBER FUNCTION getMail RETURN VARCHAR2 IS
+    BEGIN
+        RETURN correo;
+    END;
+    MEMBER FUNCTION getAddress RETURN Direccion IS
+    BEGIN
+        RETURN domicilio;
+    END;
+    MEMBER PROCEDURE mostrarPersona (SELF IN OUT NOCOPY Persona) IS
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE(TO_CHAR(idPersona) || ' ' || nombre || ' ' || correo);
+    END;
+END;
+--------------------------------------------------------------------------------------------
+CREATE TYPE Alumno UNDER Persona(
+    idAlumno NUMBER,
+    carrera VARCHAR2(20),
+    MEMBER FUNCTION getIdA RETURN NUMBER,
+    MEMBER FUNCTION getCarrera RETURN VARCHAR2,
+    OVERRIDING MEMBER PROCEDURE mostrarPersona (SELF IN OUT NOCOPY Alumno)
+);
+
+CREATE TYPE BODY Alumno AS
+    MEMBER FUNCTION getIdA RETURN NUMBER IS
+    BEGIN
+        RETURN idAlumno; 
+    END;
+    MEMBER FUNCTION getCarrera RETURN VARCHAR2 IS
+    BEGIN
+        RETURN carrera;
+    END;
+    OVERRIDING MEMBER PROCEDURE mostrarPersona (SELF IN OUT NOCOPY Alumno) IS
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE(TO_CHAR(idPersona) || ' ' || nombre || ' ' || correo || ' ' || TO_CHAR(idAlumno) || ' ' || carrera);
+    END;
+END;
+--------------------------------------------------------------------------------------------
+CREATE TYPE Maestro UNDER Persona(
+    idMaestro NUMBER,
+    materia VARCHAR2(20),
+    MEMBER FUNCTION getIdM RETURN NUMBER,
+    MEMBER FUNCTION getMateria RETURN VARCHAR2,
+    OVERRIDING MEMBER PROCEDURE mostrarPersona (SELF IN OUT NOCOPY Maestro)
+);
+
+CREATE TYPE BODY Maestro AS
+    MEMBER FUNCTION getIdM RETURN NUMBER IS
+    BEGIN
+        RETURN idMaestro; 
+    END;
+    MEMBER FUNCTION getMateria RETURN VARCHAR2 IS
+    BEGIN
+        RETURN materia;
+    END;
+    OVERRIDING MEMBER PROCEDURE mostrarPersona (SELF IN OUT NOCOPY Maestro) IS
+    BEGIN
+        DBMS_OUTPUT.PUT_LINE(TO_CHAR(idPersona) || ' ' || nombre || ' ' || correo || ' ' || TO_CHAR(idMaestro) || ' ' || materia);
+    END;
+END;
+--------------------------------------------------------------------------------------------
+CREATE TABLE Alumnos OF Alumno;
+
+CREATE TABLE Maestros OF Maestro;
+
+INSERT INTO Alumnos 
+VALUES (Alumno (1,'Pablo Acalli','crazyblockstar@gmail.com',
+                Direccion('Serafin Cantu','25870', 'Castannos','Coahuila','Mexico'),
+                1,'Gestion Empresarial'));
+
+INSERT INTO Alumnos 
+VALUES (Alumno(2,'Evelin Searjasub','Sonicmylove@gmail.com',
+                Direccion('456 Oak St','54321','Ciudad A','Estado X','Pais M'),
+                2,'Informatica'));
+
+INSERT INTO Maestros 
+VALUES (Maestro(3,'Norma Aguilar Covarrubias','norma.ac@monclova.tecnm.mx',
+            Direccion('789 Elm St','98765','Ciudad B','Estado Y','Pais n'),
+            1,'Investigacion II'));
+
+UPDATE Maestros m SET m.domicilio.pais = 'Pais N' WHERE idPersona = 3;
+SELECT * FROM Maestros;
+
+DELETE Alumnos WHERE idPersona = 2; 
+SELECT * FROM Alumnos;
+
+SELECT * FROM Alumnos;
+SELECT * FROM Maestros;
